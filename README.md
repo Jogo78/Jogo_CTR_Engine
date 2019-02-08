@@ -42,6 +42,21 @@ Just add in \js/libs and add these lines in index.html:
 
 
 
+
+//////////////////////////////////////////////////////////////////////////////
+
+//       Wall Tile                                                          //
+
+//////////////////////////////////////////////////////////////////////////////
+
+The wall is tile A4 a line on two.
+ 
+First ligne is the tile to add in map editor and the wall auto create with seconde line under the tile added.
+
+Set the terrain tag for high +1: 0 is 1 of high and 7 is 8 of high.
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 //       Wall Events Objects                                                //
