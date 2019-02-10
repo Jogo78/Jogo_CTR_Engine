@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////////////////////////
 
-//       CTR_Engine by Jogo v2.00                                           //
+//       CTR_Engine by Jogo v2.1                                            //
 
 //////////////////////////////////////////////////////////////////////////////
 
 Camera Translate Rotation ENGINE :
-"Rotate Camera in 3d Tilemap"
-author Jogo | Version: 2.00 | Date: 19.02.08
+"Rotate Camera in 3d Tilemap or just isometric"
+Author Jogo | Version: 2.1 | Date: 19.02.10
 
 
 
