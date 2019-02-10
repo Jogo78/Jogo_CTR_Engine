@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////
-//       CTR_Engine by Jogo v2.00                                           //
+//       CTR_Engine by Jogo v2.1                                            //
 //////////////////////////////////////////////////////////////////////////////
 /*:
  * @plugindesc Camera Translate Rotation ENGINE :
  * "Rotate Camera in 3d Tilemap"
- * @author Jogo | Version: 2.00 | Date: 19.02.08
+ * @author Jogo | Version: 2.1 | Date: 19.02.10
  *
  * @param CTR Engine
  *
@@ -1697,10 +1697,11 @@ Sprite_Character.prototype.updatePosition = function() {
 	if (!this._character._tileId > 0 && !this._character.isWallCharacter()) {
 		this.euler.z = -$gameMap._currentH;
 		this.scale3d.y = $gameMap._scale3dY;
-		this.z += this.getDepth() / 1000;
+		this.z += this.getDepth() / 1000 + this.adjustGetDepth();
 	} else if (this._character.isWallCharacter()) {
 		var eulerZ = $gameMap._currentH*180/Math.PI;
 		var adjust = 0.025;
+		this.z += this.adjustGetDepth();
 		if (this._character.direction() == 2) {
 			if (this._character.isObjectCharacter() && (eulerZ >= 90 && eulerZ <= 270)) this.z = 0;
 			else if (eulerZ >= 0 && eulerZ <= 90) this.z += this.getDepth() / 1000 + adjust/1.5;
@@ -1725,10 +1726,6 @@ Sprite_Character.prototype.updatePosition = function() {
 				if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "OPEN") && this.euler.y > Math.PI) this.euler.y -= 1/180*Math.PI;
 				else if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "CLOSE") && this.euler.y < 1.5 * Math.PI) this.euler.y += 1/180*Math.PI;
 			}
-/*
-			if (this.euler.y > 1.5 * Math.PI && this.euler.y < 2 * Math.PI) this.euler.y += 1/180*Math.PI;
-			else if (this.euler.y < 1.5 * Math.PI && this.euler.y > Math.PI) this.euler.y -= 1/180*Math.PI;
-*/
 		} else if (this._character.direction() == 6) {
 			if (this._character.isObjectCharacter() && (eulerZ >= 180 && eulerZ <= 360)) this.z = 0;
 			else if (this._character.isObjectCharacter() && (eulerZ >= 0 && eulerZ <= 90)) this.z += this.getDepth() / 1000 + adjust;
@@ -1743,10 +1740,6 @@ Sprite_Character.prototype.updatePosition = function() {
 				if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "OPEN") && this.euler.y > 0) this.euler.y -= 1/180*Math.PI;
 				else if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "CLOSE") && this.euler.y < 0.5 * Math.PI) this.euler.y += 1/180*Math.PI;
 			}
-/*
-			if (this.euler.y > 0.5 * Math.PI && this.euler.y < Math.PI) this.euler.y += 1/180*Math.PI;
-			else if (this.euler.y < 0.5 * Math.PI && this.euler.y > 0) this.euler.y -= 1/180*Math.PI;
-*/
 		} else if (this._character.direction() == 8) {
 			if (this._character.isObjectCharacter() && ((eulerZ >= 270 && eulerZ <= 360) || (eulerZ >= 0 && eulerZ <= 90))) this.z = 0;
 			else if (eulerZ >= 180 && eulerZ <= 270) this.z += this.getDepth() / 1000 + adjust;
@@ -1760,10 +1753,6 @@ Sprite_Character.prototype.updatePosition = function() {
 				if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "OPEN") && this.euler.y > 0.5 * Math.PI) this.euler.y -= 1/180*Math.PI;
 				else if ((String(this._character._doorState.split(',')[1]).toUpperCase() == "CLOSE") && this.euler.y < Math.PI) this.euler.y += 1/180*Math.PI;
 			}
-/*
-			if (this.euler.y > Math.PI && this.euler.y < 1.5 * Math.PI) this.euler.y += 1/180*Math.PI;
-			else if (this.euler.y < Math.PI && this.euler.y > 0.5 * Math.PI) this.euler.y -= 1/180*Math.PI;
-*/
 		}
 	}
 	this._character._screenX = this.position.x;
@@ -1776,6 +1765,16 @@ Sprite_Character.prototype.characterPatternY = function() {
 	return (direction - 2) / 2;
 };
 
+Sprite_Character.prototype.adjustGetDepth = function() {
+	var eulerZ = $gameMap._currentH*180/Math.PI;
+	if (eulerZ > 0 && eulerZ <= 90) {
+		return this.position.y / 4800 + this.position.x / 4800;
+	} else if (eulerZ > 90 && eulerZ <= 180) {
+		return  - this.position.y / 4800 - this.position.x / 4800;
+	} else if (eulerZ > 180 && eulerZ <= 270) {
+		return - this.position.y / 4800 - this.position.x / 4800;
+	} else return 0;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //       Game_Character                                                       //
@@ -2532,124 +2531,147 @@ WallAndFloorContainer.prototype.updateTransform = function() {
 };
 
 WallAndFloorContainer.prototype.containerGetDepth = function(isFloor) {
-	if (isFloor) return 3 - this.position3d.z / 2400 + this.getDepth() / 1000;
-	else return 3 + this.getDepth() / 1000;
+	var eulerZ = $gameMap._currentH*180/Math.PI;
+	if (eulerZ > 0 && eulerZ <= 90) {
+		if (isFloor) return 3 - this.position3d.z / 4800 + this.getDepth() / 1000 + this.position.y / 4800 + this.position.x / 4800;
+		else return 3 + this.getDepth() / 1000 + this.position.y / 4800 + this.position.x / 4800;
+	} else if (eulerZ > 90 && eulerZ <= 180) {
+		if (isFloor) return 3 - this.position3d.z / 2400 + this.getDepth() / 1000 - this.position.y / 4800 - this.position.x / 4800;
+		else return 3 + this.getDepth() / 1000 - this.position.y / 4800 - this.position.x / 4800;
+	} else if (eulerZ > 180 && eulerZ <= 270) {
+		if (isFloor) return 3 - this.position3d.z / 1800 + this.getDepth() / 1000 - this.position.y / 4800 - this.position.x / 4800;
+		else return 3 + this.getDepth() / 1000 - this.position.y / 4800 - this.position.x / 4800;
+	} else {
+		if (isFloor) return 3 - this.position3d.z / 2400 + this.getDepth() / 1000;
+		else return 3 + this.getDepth() / 1000;
+	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 //       Galv_DiagonalMovement                                                //
 ////////////////////////////////////////////////////////////////////////////////
 
-if (Imported.Galv_DiagonalMovement && eval(PluginManager.parameters('Jogo_CTR_Engine')["Diagonal Graphics"])) {
+if (Imported.Galv_DiagonalMovement) {
+	
+	if (eval(PluginManager.parameters('Jogo_CTR_Engine')["Diagonal Graphics"])) {
+		Sprite_Character.prototype.characterPatternY = function() {
+			var direction = this._character.isWallCharacter() ? 2 : this._character.modifiedDirection(this._character.direction());
+			if (this._character.isDiag(direction)) return Galv.DM.diagRow[direction];
+			else return (direction - 2) / 2;
+		};
 
-	Sprite_Character.prototype.characterPatternY = function() {
-		var direction = this._character.isWallCharacter() ? 2 : this._character.modifiedDirection(this._character.direction());
-		if (this._character.isDiag(direction)) return Galv.DM.diagRow[direction];
-		else return (direction - 2) / 2;
-	};
+		CTR_Engine.Sprite_Character_characterBlockX = Sprite_Character.prototype.characterBlockX;
+		Sprite_Character.prototype.characterBlockX = function() {
+			var direction = this._character.isWallCharacter() ? this._character.direction() : this._character.modifiedDirection(this._character.direction());
+			if (!this._isBigCharacter && this._character.isDiag(direction) && this._character.characterIndex() < 4) {
+				var index = this._character.characterIndex() + 4;
+				return index % 4 * 3;
+			} else {	
+				return CTR_Engine.Sprite_Character_characterBlockX.call(this);
+			};
+		};
 
-	CTR_Engine.Sprite_Character_characterBlockX = Sprite_Character.prototype.characterBlockX;
-	Sprite_Character.prototype.characterBlockX = function() {
-		var direction = this._character.isWallCharacter() ? this._character.direction() : this._character.modifiedDirection(this._character.direction());
-		if (!this._isBigCharacter && this._character.isDiag(direction) && this._character.characterIndex() < 4) {
-			var index = this._character.characterIndex() + 4;
-			return index % 4 * 3;
-		} else {	
-			return CTR_Engine.Sprite_Character_characterBlockX.call(this);
+		CTR_Engine.Sprite_Character_characterBlockY = Sprite_Character.prototype.characterBlockY;
+		Sprite_Character.prototype.characterBlockY = function() {
+			var direction = this._character.isWallCharacter() ? this._character.direction() : this._character.modifiedDirection(this._character.direction());
+			if (!this._isBigCharacter && this._character.isDiag(direction) && this._character.characterIndex() < 4) {
+				var index = this._character.characterIndex() + 4;
+				return Math.floor(index / 4) * 4;
+			} else {	
+				return CTR_Engine.Sprite_Character_characterBlockY.call(this);
+			};
+		};
+
+		Game_Character.prototype.isDiag = function(direction) {
+			if (direction == 1 || direction == 3 || direction == 7 || direction == 9) return true;
+			else return false;
+		};
+
+		Game_Character.prototype.modifiedDirection = function(direction) {
+			var eulerZ = $gameMap._currentH*180/Math.PI;
+			if (eulerZ > 292.5 && eulerZ <= 337.5) {
+				if (direction == 1) var modifiedDirection = 2;
+				else if (direction == 2) var modifiedDirection = 3;
+				else if (direction == 3) var modifiedDirection = 6;
+				else if (direction == 4) var modifiedDirection = 1;
+				else if (direction == 6) var modifiedDirection = 9;
+				else if (direction == 7) var modifiedDirection = 4;
+				else if (direction == 8) var modifiedDirection = 7;
+				else if (direction == 9) var modifiedDirection = 8;
+			} else if (eulerZ > 247.5 && eulerZ <= 292.5) {
+				if (direction == 1) var modifiedDirection = 3;
+				else if (direction == 2) var modifiedDirection = 6;
+				else if (direction == 3) var modifiedDirection = 9;
+				else if (direction == 4) var modifiedDirection = 2;
+				else if (direction == 6) var modifiedDirection = 8;
+				else if (direction == 7) var modifiedDirection = 1;
+				else if (direction == 8) var modifiedDirection = 4;
+				else if (direction == 9) var modifiedDirection = 7;
+			} else if (eulerZ > 202.5 && eulerZ <= 247.5) {
+				if (direction == 1) var modifiedDirection = 6;
+				else if (direction == 2) var modifiedDirection = 9;
+				else if (direction == 3) var modifiedDirection = 8;
+				else if (direction == 4) var modifiedDirection = 3;
+				else if (direction == 6) var modifiedDirection = 7;
+				else if (direction == 7) var modifiedDirection = 2;
+				else if (direction == 8) var modifiedDirection = 1;
+				else if (direction == 9) var modifiedDirection = 4;
+			} else if (eulerZ > 157.5 && eulerZ <= 202.5) {
+				if (direction == 1) var modifiedDirection = 9;
+				else if (direction == 2) var modifiedDirection = 8;
+				else if (direction == 3) var modifiedDirection = 7;
+				else if (direction == 4) var modifiedDirection = 6;
+				else if (direction == 6) var modifiedDirection = 4;
+				else if (direction == 7) var modifiedDirection = 3;
+				else if (direction == 8) var modifiedDirection = 2;
+				else if (direction == 9) var modifiedDirection = 1;
+			} else if (eulerZ > 112.5 && eulerZ <= 157.5) {
+				if (direction == 1) var modifiedDirection = 8;
+				else if (direction == 2) var modifiedDirection = 7;
+				else if (direction == 3) var modifiedDirection = 4;
+				else if (direction == 4) var modifiedDirection = 9;
+				else if (direction == 6) var modifiedDirection = 1;
+				else if (direction == 7) var modifiedDirection = 6;
+				else if (direction == 8) var modifiedDirection = 3;
+				else if (direction == 9) var modifiedDirection = 2;
+			} else if (eulerZ > 67.5 && eulerZ <= 112.5) {
+				if (direction == 1) var modifiedDirection = 7;
+				else if (direction == 2) var modifiedDirection = 4;
+				else if (direction == 3) var modifiedDirection = 1;
+				else if (direction == 4) var modifiedDirection = 8;
+				else if (direction == 6) var modifiedDirection = 2;
+				else if (direction == 7) var modifiedDirection = 9;
+				else if (direction == 8) var modifiedDirection = 6;
+				else if (direction == 9) var modifiedDirection = 3;
+			} else if (eulerZ > 22.5 && eulerZ <= 67.5) {
+				if (direction == 1) var modifiedDirection = 4;
+				else if (direction == 2) var modifiedDirection = 1;
+				else if (direction == 3) var modifiedDirection = 2;
+				else if (direction == 4) var modifiedDirection = 7;
+				else if (direction == 6) var modifiedDirection = 3;
+				else if (direction == 7) var modifiedDirection = 8;
+				else if (direction == 8) var modifiedDirection = 9;
+				else if (direction == 9) var modifiedDirection = 6;
+			} else {
+				return direction;
+			}
+			return modifiedDirection;
 		};
 	};
 
-	CTR_Engine.Sprite_Character_characterBlockY = Sprite_Character.prototype.characterBlockY;
-	Sprite_Character.prototype.characterBlockY = function() {
-		var direction = this._character.isWallCharacter() ? this._character.direction() : this._character.modifiedDirection(this._character.direction());
-		if (!this._isBigCharacter && this._character.isDiag(direction) && this._character.characterIndex() < 4) {
-			var index = this._character.characterIndex() + 4;
-			return Math.floor(index / 4) * 4;
-		} else {	
-			return CTR_Engine.Sprite_Character_characterBlockY.call(this);
-		};
-	};
-
-	Game_Character.prototype.isDiag = function(direction) {
-		if (direction == 1 || direction == 3 || direction == 7 || direction == 9) return true;
-		else return false;
-	};
-
-	Game_Character.prototype.modifiedDirection = function(direction) {
-		var eulerZ = $gameMap._currentH*180/Math.PI;
-		if (eulerZ > 292.5 && eulerZ <= 337.5) {
-			if (direction == 1) var modifiedDirection = 2;
-			else if (direction == 2) var modifiedDirection = 3;
-			else if (direction == 3) var modifiedDirection = 6;
-			else if (direction == 4) var modifiedDirection = 1;
-			else if (direction == 6) var modifiedDirection = 9;
-			else if (direction == 7) var modifiedDirection = 4;
-			else if (direction == 8) var modifiedDirection = 7;
-			else if (direction == 9) var modifiedDirection = 8;
-		} else if (eulerZ > 247.5 && eulerZ <= 292.5) {
-			if (direction == 1) var modifiedDirection = 3;
-			else if (direction == 2) var modifiedDirection = 6;
-			else if (direction == 3) var modifiedDirection = 9;
-			else if (direction == 4) var modifiedDirection = 2;
-			else if (direction == 6) var modifiedDirection = 8;
-			else if (direction == 7) var modifiedDirection = 1;
-			else if (direction == 8) var modifiedDirection = 4;
-			else if (direction == 9) var modifiedDirection = 7;
-		} else if (eulerZ > 202.5 && eulerZ <= 247.5) {
-			if (direction == 1) var modifiedDirection = 6;
-			else if (direction == 2) var modifiedDirection = 9;
-			else if (direction == 3) var modifiedDirection = 8;
-			else if (direction == 4) var modifiedDirection = 3;
-			else if (direction == 6) var modifiedDirection = 7;
-			else if (direction == 7) var modifiedDirection = 2;
-			else if (direction == 8) var modifiedDirection = 1;
-			else if (direction == 9) var modifiedDirection = 4;
-		} else if (eulerZ > 157.5 && eulerZ <= 202.5) {
-			if (direction == 1) var modifiedDirection = 9;
-			else if (direction == 2) var modifiedDirection = 8;
-			else if (direction == 3) var modifiedDirection = 7;
-			else if (direction == 4) var modifiedDirection = 6;
-			else if (direction == 6) var modifiedDirection = 4;
-			else if (direction == 7) var modifiedDirection = 3;
-			else if (direction == 8) var modifiedDirection = 2;
-			else if (direction == 9) var modifiedDirection = 1;
-		} else if (eulerZ > 112.5 && eulerZ <= 157.5) {
-			if (direction == 1) var modifiedDirection = 8;
-			else if (direction == 2) var modifiedDirection = 7;
-			else if (direction == 3) var modifiedDirection = 4;
-			else if (direction == 4) var modifiedDirection = 9;
-			else if (direction == 6) var modifiedDirection = 1;
-			else if (direction == 7) var modifiedDirection = 6;
-			else if (direction == 8) var modifiedDirection = 3;
-			else if (direction == 9) var modifiedDirection = 2;
-		} else if (eulerZ > 67.5 && eulerZ <= 112.5) {
-			if (direction == 1) var modifiedDirection = 7;
-			else if (direction == 2) var modifiedDirection = 4;
-			else if (direction == 3) var modifiedDirection = 1;
-			else if (direction == 4) var modifiedDirection = 8;
-			else if (direction == 6) var modifiedDirection = 2;
-			else if (direction == 7) var modifiedDirection = 9;
-			else if (direction == 8) var modifiedDirection = 6;
-			else if (direction == 9) var modifiedDirection = 3;
-		} else if (eulerZ > 22.5 && eulerZ <= 67.5) {
-			if (direction == 1) var modifiedDirection = 4;
-			else if (direction == 2) var modifiedDirection = 1;
-			else if (direction == 3) var modifiedDirection = 2;
-			else if (direction == 4) var modifiedDirection = 7;
-			else if (direction == 6) var modifiedDirection = 3;
-			else if (direction == 7) var modifiedDirection = 8;
-			else if (direction == 8) var modifiedDirection = 9;
-			else if (direction == 9) var modifiedDirection = 6;
-		} else {
-			return direction;
-		}
-		return modifiedDirection;
+	Game_CharacterBase.prototype.getDir = function(horz,vert) {
+		if (horz == 4 && vert == 2) return 2;
+		if (horz == 6 && vert == 2) return 4;
+		if (horz == 4 && vert == 8) return 6;
+		if (horz == 6 && vert == 8) return 8;
+		return 0;
 	};
 
 	Game_CharacterBase.prototype.moveDiagonally = function(horz, vert) {
 		var diag = this.canPassDiagonally(this._x, this._y, horz, vert);
 		var norm = this.canPass(this._x, this._y, horz) || this.canPass(this._x, this._y, vert);
-		var direction = Galv.DM.getDir(horz,vert);
+		if (eval(PluginManager.parameters('Jogo_CTR_Engine')["Diagonal Graphics"])) var direction = Galv.DM.getDir(horz,vert);
+		else var direction = this.getDir(horz,vert);
 		this.setDirection(direction);
 		if (diag) {
 			//this.setDirection(Galv.DM.getDir(horz,vert));
