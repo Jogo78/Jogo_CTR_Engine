@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 /*:
  * @plugindesc Camera Translate Rotation ENGINE :
- * "Rotate Camera in 3d Tilemap"
+ * "Rotate Camera in 3d Tilemap or just isometric"
  * @author Jogo | Version: 2.1 | Date: 19.02.10
  *
  * @param CTR Engine
