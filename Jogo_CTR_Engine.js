@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////
-//       CTR_Engine by Jogo v2.2                                            //
+//       CTR_Engine by Jogo v2.3                                            //
 //////////////////////////////////////////////////////////////////////////////
 /*:
  * @plugindesc Camera Translate Rotation ENGINE :
  * "Rotate Camera in 3d Tilemap or just isometric"
- * @author Jogo | Version: 2.2 | Date: 19.02.10
+ * @author Jogo | Version: 2.3 | Date: 19.02.10
  *
  * @param CTR Engine
  *
@@ -1774,6 +1774,31 @@ Sprite_Character.prototype.adjustGetDepth = function() {
 	} else if (eulerZ > 180 && eulerZ <= 270) {
 		return - this.position.y / 4800 - this.position.x / 4800;
 	} else return 0;
+};
+
+Sprite_Character.prototype.startBalloon = function() {
+    if (!this._balloonSprite) {
+        this._balloonSprite = new Sprite_Balloon();
+    }
+    this._balloonSprite.setup(this._character.balloonId());
+    this.addChild(this._balloonSprite);
+};
+
+Sprite_Character.prototype.updateBalloon = function() {
+    this.setupBalloon();
+    if (this._balloonSprite) {
+        this._balloonSprite.y = - this.height;
+        if (!this._balloonSprite.isPlaying()) {
+            this.endBalloon();
+        }
+    }
+};
+
+Sprite_Character.prototype.endBalloon = function() {
+    if (this._balloonSprite) {
+        this.removeChild(this._balloonSprite);
+        this._balloonSprite = null;
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
