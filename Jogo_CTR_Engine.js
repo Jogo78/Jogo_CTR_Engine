@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////////////////
-//       CTR_Engine by Jogo v2.3                                            //
+//       CTR_Engine by Jogo v2.4                                            //
 //////////////////////////////////////////////////////////////////////////////
 /*:
  * @plugindesc Camera Translate Rotation ENGINE :
  * "Rotate Camera in 3d Tilemap or just isometric"
- * @author Jogo | Version: 2.3 | Date: 19.02.10
+ * @author Jogo | Version: 2.4 | Date: 19.02.13
  *
  * @param CTR Engine
  *
@@ -249,7 +249,7 @@
  * @parent Scale
  * @desc Set the positive scale keys input list separate by ",".
  * Example: ok,escape,1,2 (Leave blank for not use.)
- * @default down,left,right,up
+ * @default shift
  *
  * @param Negative Input S
  * @parent Scale
@@ -1817,25 +1817,48 @@ Game_CharacterBase.prototype.setImage = function(characterName, characterIndex) 
 
 Game_Character.prototype.modifiedDirection = function(direction) {
 	var eulerZ = $gameMap._currentH*180/Math.PI;
-	if (eulerZ > 225 && eulerZ <= 315) {
-		if (direction == 2) var modifiedDirection = 6;
-		else if (direction == 4) var modifiedDirection = 2;
-		else if (direction == 6) var modifiedDirection = 8;
-		else if (direction == 8) var modifiedDirection = 4;
-	} else if (eulerZ > 135 && eulerZ <= 225) {
-		if (direction == 2) var modifiedDirection  = 8;
-		else if (direction == 4) var modifiedDirection = 6;
-		else if (direction == 6) var modifiedDirection = 4;
-		else if (direction == 8) var modifiedDirection = 2;
-	} else if (eulerZ > 45 && eulerZ <= 135) {
-		if (direction == 2) var modifiedDirection = 4;
-		else if (direction == 4) var modifiedDirection = 8;
-		else if (direction == 6) var modifiedDirection = 2;
-		else if (direction == 8) var modifiedDirection = 6;
+	if (eulerZ > 292.5 && eulerZ <= 337.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 2;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 4;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 6;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 8;
+	} else if (eulerZ > 247.5 && eulerZ <= 292.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 6;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 2;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 8;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 4;
+	} else if (eulerZ > 202.5 && eulerZ <= 247.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 6;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 2;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 8;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 4;
+	} else if (eulerZ > 157.5 && eulerZ <= 202.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 8;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 6;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 4;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 2;
+	} else if (eulerZ > 112.5 && eulerZ <= 157.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 8;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 6;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 4;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 2;
+	} else if (eulerZ > 67.5 && eulerZ <= 112.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 4;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 8;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 2;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 6;
+	} else if (eulerZ > 22.5 && eulerZ <= 67.5) {
+		if (direction == 1 || direction == 2) var modifiedDirection = 4;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 8;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 2;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 6;
 	} else {
-		return direction;
+		if (direction == 1 || direction == 2) var modifiedDirection = 2;
+		else if (direction == 3 || direction == 4) var modifiedDirection = 4;
+		else if (direction == 6 || direction == 7) var modifiedDirection = 6;
+		else if (direction == 8 || direction == 9) var modifiedDirection = 8;
 	}
-    return modifiedDirection;
+	return modifiedDirection;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2577,10 +2600,10 @@ WallAndFloorContainer.prototype.containerGetDepth = function(isFloor) {
 ////////////////////////////////////////////////////////////////////////////////
 
 if (Imported.Galv_DiagonalMovement) {
-	
+
 	if (eval(PluginManager.parameters('Jogo_CTR_Engine')["Diagonal Graphics"])) {
 		Sprite_Character.prototype.characterPatternY = function() {
-			var direction = this._character.isWallCharacter() ? 2 : this._character.modifiedDirection(this._character.direction());
+			var direction = this._character.isWallCharacter() ? 2 : this._character.isObjectCharacter() ? this._character.direction() : this._character.modifiedDirection(this._character.direction());
 			if (this._character.isDiag(direction)) return Galv.DM.diagRow[direction];
 			else return (direction - 2) / 2;
 		};
@@ -2685,11 +2708,14 @@ if (Imported.Galv_DiagonalMovement) {
 	};
 
 	Game_CharacterBase.prototype.getDir = function(horz,vert) {
-		if (horz == 4 && vert == 2) return 2;
-		if (horz == 6 && vert == 2) return 4;
-		if (horz == 4 && vert == 8) return 6;
-		if (horz == 6 && vert == 8) return 8;
-		return 0;
+		if (horz == 0 && vert == 2) return 2;
+		else if (horz == 4 && vert == 2) return 2;
+		else if (horz == 6 && vert == 0) return 6;
+		else if (horz == 6 && vert == 2) return 6;
+		else if (horz == 4 && vert == 0) return 4;
+		else if (horz == 4 && vert == 8) return 4;
+		else if (horz == 0 && vert == 8) return 8;
+		else if (horz == 6 && vert == 8) return 8;
 	};
 
 	Game_CharacterBase.prototype.moveDiagonally = function(horz, vert) {
